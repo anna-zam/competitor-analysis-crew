@@ -106,13 +106,13 @@ analyst = Agent(
 )
 
 strategist = Agent(
-    role="Go-To-Market Strategist",
-    goal=("Сформировать рекомендации: чем можно обойти конкурентов, "
-          "какие офферы/секции/сообщения добавить на сайт, "
-          "микроулучшения конверсии, первые шаги на 2 недели."),
+    role="Strategic Advisor",
+    goal=("Проанализировать конкурентов и сформировать стратегические рекомендации ДЛЯ НАШЕГО БИЗНЕСА: "
+          "что позаимствовать у сильных конкурентов, какие слабые стороны конкурентов дают нам преимущество, "
+          "какие уникальные возможности мы можем использовать для обгона."),
     backstory=(
-        "Этот агент превращает анализ в чёткий план действий. "
-        "Должен дать понятные пункты: что сделать сегодня/на неделе."
+        "Этот агент думает стратегически о том, как использовать анализ конкурентов в нашу пользу. "
+        "Он не дает советы конкурентам, а формирует план действий для нашего бизнеса."
     ),
     tools=[],
     verbose=True,
@@ -159,25 +159,37 @@ task2 = Task(
 task3 = Task(
     description=(
         "Сравнить конкурентов между собой и составить аналитическую сводку:\n"
-        "- таблица: конкурент → сильные / слабые / отличия\n"
-        "- общие тренды в нише\n"
-        "- дыры, где можно обойти конкурентов\n"
+        "- для каждого конкурента выделить: сильные стороны, слабые стороны, уникальные особенности\n"
+        "- общие тренды в нише (что делают все)\n"
+        "- пробелы в нише (что никто не делает или делает плохо)\n"
+        "- возможности для дифференциации\n"
         "- краткий SEO-скриншот (какие темы и ключи явно видны в текстах)\n"
     ),
-    expected_output="Сравнительная таблица и сводка по нише.",
+    expected_output="Сравнительная таблица с сильными/слабыми сторонами каждого конкурента и возможностями для нашей стратегии.",
     agent=analyst,
 )
 
-# 4) Рекомендации и ближайший план
+# 4) Стратегические рекомендации для нашего бизнеса
 task4 = Task(
     description=(
-        "Сформировать конкретные рекомендации для нашего сайта:\n"
-        "- офферы и секции, которые стоит добавить/усилить\n"
-        "- 5–7 микроизменений для повышения конверсии\n"
-        "- 10 тем для статей/лендингов под видимые запросы\n"
-        "- план на 2 недели (спринт) — краткий чек-лист задач\n"
+        "На основе анализа конкурентов сформировать стратегические рекомендации ДЛЯ НАШЕГО БИЗНЕСА:\n"
+        "\n"
+        "### Что позаимствовать у сильных конкурентов:\n"
+        "- какие офферы/секции/подходы работают у конкурентов и стоит внедрить у нас\n"
+        "- какие элементы конверсии показали эффективность\n"
+        "- какие контент-стратегии приносят результат\n"
+        "\n"
+        "### Возможности для обгона (слабые стороны конкурентов):\n"
+        "- какие пробелы в нише мы можем заполнить\n"
+        "- где конкуренты слабы и мы можем выделиться\n"
+        "- какие уникальные преимущества мы можем подчеркнуть\n"
+        "\n"
+        "### Конкретный план действий:\n"
+        "- 5-7 приоритетных шагов для внедрения лучших практик\n"
+        "- 10 тем для контента, которые помогут обойти конкурентов\n"
+        "- план на 2 недели (спринт) — конкретные задачи\n"
     ),
-    expected_output="Список рекомендаций и план на 2 недели.",
+    expected_output="Стратегические рекомендации для нашего бизнеса: что позаимствовать, как обойти конкурентов, план действий.",
     agent=strategist,
 )
 
@@ -220,11 +232,17 @@ def run_competitor_crew(urls: list[str]) -> str:
     os.environ["INPUT_URLS"] = ",".join(urls)
 
     # Подпихнём черновик корпуса в description Task1 (чтобы ИИ видел структуру)
-    task1.description += (
+    # Создаем копию описания задачи, чтобы не модифицировать оригинал
+    original_description = task1.description
+    task1.description = original_description + (
         "\n---\nПример корпуса (сформирован заранее кодом):\n" + str(corpus)[:5000]
     )
 
     result = crew.kickoff()
+    
+    # Восстанавливаем оригинальное описание задачи
+    task1.description = original_description
+    
     return str(result)
 
 def parse_competitor_summary(report_text: str) -> dict:
@@ -334,15 +352,37 @@ def build_charts(data: dict) -> list:
         
         # График 1: Объем текста (Plotly)
         text_sizes = [data[domain].get('text_size', 0) for domain in domains]
-        fig1 = px.bar(
-            x=domains, 
-            y=text_sizes,
-            title="Объем текста по доменам",
-            labels={"x": "Домен", "y": "Количество символов"},
-            color=text_sizes,
-            color_continuous_scale="Blues"
+        fig1 = go.Figure(data=[
+            go.Bar(
+                x=domains,
+                y=text_sizes,
+                marker_color='lightcoral',
+                text=text_sizes,
+                textposition='auto',
+                name='Количество символов',
+                hovertemplate='<b>%{x}</b><br>Символов: %{y}<extra></extra>'
+            )
+        ])
+        fig1.update_layout(
+            title={
+                'text': "Объем текста по доменам",
+                'x': 0.5,
+                'xanchor': 'center',
+                'font': {'size': 16}
+            },
+            xaxis_title="Домен",
+            yaxis_title="Количество символов",
+            xaxis_tickangle=-45,
+            height=500,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
         )
-        fig1.update_layout(xaxis_tickangle=-45, height=500, showlegend=False)
         
         chart1_path = charts_dir / "text_size.png"
         fig1.write_image(str(chart1_path), format="png", width=1200, height=700, scale=2)
@@ -355,12 +395,13 @@ def build_charts(data: dict) -> list:
         
         for bar, cta in zip(bars, ctas):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.1, 
-                    str(cta), ha='center', va='bottom')
+                    str(cta), ha='center', va='bottom', fontweight='bold')
         
-        plt.title("Количество CTA по доменам", fontsize=14, fontweight='bold')
-        plt.xlabel("Домен", fontsize=12)
-        plt.ylabel("Количество CTA", fontsize=12)
+        plt.title("Количество CTA по доменам", fontsize=16, fontweight='bold', pad=20)
+        plt.xlabel("Домен", fontsize=12, fontweight='bold')
+        plt.ylabel("Количество CTA", fontsize=12, fontweight='bold')
         plt.xticks(rotation=45, ha='right')
+        plt.grid(axis='y', alpha=0.3)
         plt.tight_layout()
         
         chart2_path = charts_dir / "ctas.png"
@@ -377,14 +418,29 @@ def build_charts(data: dict) -> list:
                 marker_color='lightgreen',
                 text=trust_signals,
                 textposition='auto',
+                name='Сигналы доверия',
+                hovertemplate='<b>%{x}</b><br>Сигналов доверия: %{y}<extra></extra>'
             )
         ])
         fig3.update_layout(
-            title="Количество сигналов доверия по доменам",
+            title={
+                'text': "Количество сигналов доверия по доменам",
+                'x': 0.5,
+                'xanchor': 'center',
+                'font': {'size': 16}
+            },
             xaxis_title="Домен",
             yaxis_title="Количество сигналов",
             xaxis_tickangle=-45,
-            height=500
+            height=500,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
         )
         
         chart3_path = charts_dir / "trust_signals.png"

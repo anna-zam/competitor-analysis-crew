@@ -1,0 +1,94 @@
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.App {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #2c3e50;
+}
+
+.App-header {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px 20px;
+  text-align: center;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+}
+
+.App-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.App-header p {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  font-weight: 400;
+}
+
+main {
+  padding: 0 20px 40px 20px;
+}
+
+/* Loading animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .App-header {
+    padding: 30px 15px;
+  }
+  
+  .App-header h1 {
+    font-size: 2rem;
+  }
+  
+  .App-header p {
+    font-size: 1rem;
+  }
+  
+  main {
+    padding: 0 15px 30px 15px;
+  }
+}

@@ -46,7 +46,8 @@ class HealthResponse(BaseModel):
     ok: bool
 
 # Создаем папки для отчетов и графиков
-REPORTS_DIR = Path("../reports")
+# Используем абсолютные пути для надежности
+REPORTS_DIR = Path(__file__).parent.parent / "reports"
 CHARTS_DIR = REPORTS_DIR / "charts"
 REPORTS_DIR.mkdir(exist_ok=True)
 CHARTS_DIR.mkdir(exist_ok=True)
@@ -227,18 +228,27 @@ async def analyze_competitors(request: AnalyzeRequest):
             title="Анализ конкурентов — автогенерируемый отчёт",
             sections=sections,
             table_blocks=None,
-            images=chart_paths
+            images=chart_paths,
+            urls=request.urls
         )
         
         # Возвращаем относительный путь для скачивания
-        relative_pdf_path = str(pdf_path).replace("\\", "/")
-        if relative_pdf_path.startswith("../"):
-            relative_pdf_path = relative_pdf_path[3:]
+        # Получаем относительный путь от папки reports
+        try:
+            relative_pdf_path = pdf_path.relative_to(REPORTS_DIR)
+            relative_pdf_path = str(relative_pdf_path).replace("\\", "/")
+        except ValueError:
+            # Если файл не в папке reports, используем только имя файла
+            relative_pdf_path = pdf_path.name
         
         print(f"PDF сохранен: {pdf_path}")
         
+        # Очищаем markdown из краткой сводки для frontend
+        from report_export import _clean_markdown
+        cleaned_summary = _clean_markdown(report_text)
+        
         return AnalyzeResponse(
-            report_text=report_text[:1000] + "..." if len(report_text) > 1000 else report_text,
+            report_text=cleaned_summary[:1000] + "..." if len(cleaned_summary) > 1000 else cleaned_summary,
             pdf_path=relative_pdf_path,
             charts=chart_paths
         )
@@ -252,14 +262,16 @@ async def download_file(path: str = Query(...)):
     """Безопасная загрузка файлов из папки reports"""
     try:
         # Проверяем что путь не выходит за пределы папки reports
-        safe_path = Path("../reports") / path
+        safe_path = REPORTS_DIR / path
         safe_path = safe_path.resolve()
-        reports_path = Path("../reports").resolve()
+        reports_path = REPORTS_DIR.resolve()
         
         if not str(safe_path).startswith(str(reports_path)):
             raise HTTPException(status_code=403, detail="Доступ запрещен")
         
         if not safe_path.exists():
+            print(f"Файл не найден: {safe_path}")
+            print(f"Содержимое папки reports: {list(REPORTS_DIR.iterdir())}")
             raise HTTPException(status_code=404, detail="Файл не найден")
         
         return FileResponse(
@@ -269,6 +281,7 @@ async def download_file(path: str = Query(...)):
         )
         
     except Exception as e:
+        print(f"Ошибка при загрузке файла: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка при загрузке файла: {str(e)}")
 
 # Статический сервер для графиков (опционально)

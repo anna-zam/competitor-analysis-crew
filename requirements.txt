@@ -12,10 +12,11 @@ pydantic==2.11.7
 python-multipart==0.0.20
 
 # Visualization
-plotly==5.24.1
+plotly==6.3.0
 matplotlib==3.9.2
 pandas==2.2.3
 
 # Additional dependencies
 pillow==11.3.0
 numpy==2.2.6
+kaleido==1.0.0
