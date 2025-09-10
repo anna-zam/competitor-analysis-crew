@@ -1,0 +1,21 @@
+# Core dependencies
+crewai==0.177.0
+requests==2.32.5
+beautifulsoup4==4.13.5
+python-dotenv==1.1.1
+reportlab==4.4.3
+
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+python-multipart==0.0.20
+
+# Visualization
+plotly==5.24.1
+matplotlib==3.9.2
+pandas==2.2.3
+
+# Additional dependencies
+pillow==11.3.0
+numpy==2.2.6

@@ -1,0 +1,40 @@
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# Виртуальное окружение
+.venv/
+venv/
+ENV/
+
+# Настройки IDE
+.vscode/
+.idea/
+
+# Файлы окружения
+.env
+.env.local
+.env.*.local
+
+# === Node / Vite (frontend) ===
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# === Отчёты и временные файлы ===
+reports/*.pdf
+reports/charts/*.png
+!reports/.gitkeep     # если хочешь держать пустую папку reports
+
+# === OS-specific ===
+.DS_Store
+Thumbs.db
+
+# === Cursor / VS Code workspace ===
+cursor.json
+*.code-workspace
+.history/
